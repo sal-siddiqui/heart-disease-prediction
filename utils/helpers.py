@@ -22,7 +22,9 @@ def custom_GridSearchCV(
     param_grid = ParameterGrid(param_grid)
 
     # Cross-validation folds
-    k_folds = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    k_folds = StratifiedKFold(
+        n_splits=n_splits, shuffle=True, random_state=random_state
+    )
 
     results = []
 
@@ -37,7 +39,10 @@ def custom_GridSearchCV(
         # For each fold:
         for train_index, val_index in k_folds.split(X_train, y_train):
             # Retrive the training fold
-            X_train_cv, y_train_cv = X_train.iloc[train_index], y_train.iloc[train_index]
+            X_train_cv, y_train_cv = (
+                X_train.iloc[train_index],
+                y_train.iloc[train_index],
+            )
             # Retrive the validation fold
             X_val_cv, y_val_cv = X_train.iloc[val_index], y_train.iloc[val_index]
 
@@ -55,10 +60,14 @@ def custom_GridSearchCV(
                 scoring_metrics[scoring_method].append(score)
 
         # Compute mean score for each metric
-        scoring_metrics = {key: np.mean(values) for key, values in scoring_metrics.items()}
+        scoring_metrics = {
+            key: np.mean(values) for key, values in scoring_metrics.items()
+        }
 
         # Store the model along with the hyper-parameters and scoring metrics
-        results.append({"estimator": model, "params": params, "scores": scoring_metrics})
+        results.append(
+            {"estimator": model, "params": params, "scores": scoring_metrics}
+        )
 
     # Sort the results by all scoring metrics (in descending order)
     results = sorted(
@@ -153,7 +162,9 @@ def custom_classification_report(y_true, y_pred, labels=None):
     # If 'labels' is provided
     if labels is not None:
         # Ensure 'labels' is a list (if it's a NumPy array or pandas Series)
-        labels = labels.tolist() if isinstance(labels, (np.ndarray, pd.Series)) else labels
+        labels = (
+            labels.tolist() if isinstance(labels, (np.ndarray, pd.Series)) else labels
+        )
 
         # Create the new index by combining 'labels' and the rest of the current index
         new_index = labels + report_frame.index[len(labels) :].to_list()
@@ -162,3 +173,20 @@ def custom_classification_report(y_true, y_pred, labels=None):
         report_frame.index = new_index
 
     return report_frame
+
+
+from dataclasses import dataclass
+from typing import Dict, Any
+from sklearn.base import BaseEstimator
+
+
+@dataclass
+class CustomModel:
+    estimator: BaseEstimator
+    params: Dict[str, Any]
+    scores: Dict[str, float]
+
+    @classmethod
+    def from_dict(cls, dict_):
+        data = dict_
+        return cls(**data)
